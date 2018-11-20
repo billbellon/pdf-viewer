@@ -1,0 +1,19 @@
+#canvasContainer {
+	white-space: nowrap;
+}
+
+.page {
+	display: inline-block !important;
+}
+
+#canvasContainer .page:nth-child(even) {
+	margin-right: 30px;
+}
+
+#pageContainer1 {
+	margin-right: 0 !important;
+}
+
+#pageContainer2 {
+	margin-right: 30px !important;
+}
