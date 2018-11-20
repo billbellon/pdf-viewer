@@ -21,20 +21,17 @@
 		pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js'; // DEBUG - should I provide the local URL to this file?
 
 		var PDF = {
-			pdfDoc: null,
-			pdfDoc2: null,
-			pageNum: 1,
-			pageNum2: 2,
-			pageRendering: false,
-			pageRendering2: false,
-			pageNumPending: null,
-			pageNumPending2: null,
+			pdfDoc: [null, null],
+			pageNum: [1, 2],
+			pageRendering: [false, false],
+			pageNumPending: [null, null],
 			scale: 0.8,
-			canvas: document.getElementById('the-canvas'),
-			canvas2: document.getElementById('the-canvas-2')
+			canvas: [document.getElementById('the-canvas'), document.getElementById('the-canvas-2')],
 		};
-		PDF.ctx = PDF.canvas.getContext('2d');
-		PDF.ctx2 = PDF.canvas2.getContext('2d');
+		PDF.ctx = [
+			PDF.canvas[0].getContext('2d'),
+			PDF.canvas[1].getContext('2d')
+		];
 
 		init();
 
@@ -47,44 +44,30 @@
 		 */
 		function init() {
 			document.getElementById('next').addEventListener('click', onNextPage);
-			
+			document.getElementById('prev').addEventListener('click', onPrevPage);
+
 			pdfjsLib.getDocument(url).then(function(pdfDoc_) {
-				PDF.pdfDoc = pdfDoc_;
-				document.getElementById('page_count').textContent = PDF.pdfDoc.numPages;
+				PDF.pdfDoc[0] = pdfDoc_;
+				PDF.pdfDoc[1] = pdfDoc_;
+				document.getElementById('page_count').textContent = PDF.pdfDoc[0].numPages;
 
 				// Initial/first page rendering
-				renderView(PDF.pageNum);
+				renderView(PDF.pageNum[0], 0);
 			});
 		}
 
 		/**
 		 * Get page info from document, resize canvas accordingly, and render page.
-		 * @param num Page number.
+		 * @param num  - Page number.
+		 * @param p - which page / canvas to render.
 		 */
-		function renderView(num) {
-			PDF.pageRendering = true;
+		function renderView(num, p) {
+			console.log('p A: ', p); // DEBUG
+			PDF.pageRendering[p] = true;
 			// Using promise to fetch the page
-			PDF.pdfDoc.getPage(num).then(function(page) {
-				var viewport = page.getViewport(PDF.scale);
-				PDF.canvas.height = viewport.height;
-				PDF.canvas.width = viewport.width;
-
-				// Render PDF page into canvas context
-				var renderContext = {
-					canvasContext: PDF.ctx,
-					viewport: viewport
-				};
-				var renderTask = page.render(renderContext);
-
-				// Wait for rendering to finish
-				renderTask.promise.then(function() {
-					PDF.pageRendering = false;
-					if (PDF.pageNumPending !== null) {
-						// New page rendering is pending
-						renderView(PDF.pageNumPending);
-						PDF.pageNumPending = null;
-					}
-				});
+			PDF.pdfDoc[p].getPage(num).then(function(page) {
+				console.log('p B: ', p); // DEBUG
+				return onGetPage(page, p); // DEBUG - will p be the value at the time this promise is created or when .then is executed?
 			});
 
 			// Update page counters
@@ -92,14 +75,46 @@
 		}
 
 		/**
+		 *
+		 */
+		function onGetPage(page, p) {
+			var viewport = page.getViewport(PDF.scale);
+			PDF.canvas[p].height = viewport.height;
+			PDF.canvas[p].width = viewport.width;
+
+			// Render PDF page into canvas context
+			var renderContext = {
+				canvasContext: PDF.ctx[p],
+				viewport: viewport
+			};
+			var renderTask = page.render(renderContext);
+
+			// Wait for rendering to finish
+			renderTask.promise.then(function() {
+				PDF.pageRendering[p] = false;
+				if (PDF.pageNumPending[p] !== null) {
+					// New page rendering is pending
+					renderView(PDF.pageNumPending[p], page);
+					PDF.pageNumPending[p] = null;
+				}
+
+				// DEBUG
+				if (p === 0) {
+					console.log('DEBUG 1');//DEBUG
+					renderView(PDF.pageNum[1], 1);
+				}
+			});
+		}
+
+		/**
 		 * If another page rendering in progress, waits until the rendering is
 		 * finised. Otherwise, executes rendering immediately.
 		 */
 		function queueRenderPage(num) {
-			if (PDF.pageRendering) {
-				PDF.pageNumPending = num;
+			if (PDF.pageRendering[0]) {
+				PDF.pageNumPending[0] = num;
 			} else {
-				renderView(num);
+				renderView(num, 0);
 			}
 		}
 
@@ -107,24 +122,22 @@
 		 * Displays previous page.
 		 */
 		function onPrevPage() {
-			if (PDF.pageNum <= 1) {
+			if (PDF.pageNum[0] <= 1) {
 				return;
 			}
-			PDF.pageNum--;
-			queueRenderPage(PDF.pageNum);
+			PDF.pageNum[0]--;
+			queueRenderPage(PDF.pageNum[0]);
 		}
-
-		document.getElementById('prev').addEventListener('click', onPrevPage);
 
 		/**
 		 * Displays next page.
 		 */
 		function onNextPage() {
-			if (PDF.pageNum >= PDF.pdfDoc.numPages) {
+			if (PDF.pageNum[0] >= PDF.pdfDoc[0].numPages) {
 				return;
 			}
-			PDF.pageNum++;
-			queueRenderPage(PDF.pageNum);
+			PDF.pageNum[0]++;
+			queueRenderPage(PDF.pageNum[0]);
 		}
 
 	});
