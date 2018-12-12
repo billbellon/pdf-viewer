@@ -3,9 +3,37 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Title</title>
+	<style>
+		html, body {
+			margin: 0;
+			padding: 0;
+			width: 100%;
+			height: 100%;
+			font-size: 0;
+		}
+		#banner {
+			font-size: 14px;
+		}
+
+		#banner h1 {
+			margin: 0;
+			padding: 10px;
+		}
+
+		#content canvas {
+			float: left;
+			background-color: red;
+			border: solid 1px red;
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+	</style>
 </head>
 <body>
-<script src="//mozilla.github.io/pdf.js/build/pdf.js"></script>
+<!--<script src="//mozilla.github.io/pdf.js/build/pdf.js"></script>-->
+<script src="./pdfjs-2.0.943-dist/build/pdf.js"></script>
 <script>
 	document.addEventListener("DOMContentLoaded", function(event) {
 
@@ -15,10 +43,11 @@
 		var url = 'https://cms-test1.ssec.wisc.edu/pdf-viewer/custom/example-pdfs/TtA_Winter_Spring_2018.pdf';
 
 		// Loaded via <script> tag, create shortcut to access PDF.js exports.
-		var pdfjsLib = window['pdfjs-dist/build/pdf']; // DEBUG - what is this used for and does this need to be updated with my path to pdf.js?
+		// var pdfjsLib = window['pdfjs-dist/build/pdf']; // DEBUG - what is this used for and does this need to be updated with my path to pdf.js?
 
 		// The workerSrc property shall be specified.
-		pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js'; // DEBUG - should I provide the local URL to this file?
+		// pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js'; // DEBUG - should I provide the local URL to this file?
+		pdfjsLib.GlobalWorkerOptions.workerSrc = './pdfjs-2.0.943-dist/build/pdf.worker.js';
 
 		var PDF = {
 			pdfDoc: [null, null],
@@ -27,6 +56,8 @@
 			pageNumPending: [null, null],
 			scale: 0.8,
 			canvas: [document.getElementById('the-canvas'), document.getElementById('the-canvas-2')],
+			windowWidth: windowWidth(),
+			windowHeight: windowHeight()
 		};
 		PDF.ctx = [
 			PDF.canvas[0].getContext('2d'),
@@ -78,14 +109,46 @@
 		 *
 		 */
 		function onGetPage(page, p) {
-			var viewport = page.getViewport(PDF.scale);
-			PDF.canvas[p].height = viewport.height;
-			PDF.canvas[p].width = viewport.width;
+			// DEBUG
+			// var viewport = page.getViewport(PDF.scale);
+			// PDF.canvas[p].height = viewport.height;
+			// PDF.canvas[p].width = viewport.width;
+
+			//FROM: https://mozilla.github.io/pdf.js/examples/
+			// var DEBUG_FUDGEFACTOR = 100; // DEBUG - refactor to get rid of this - this is used for now because I can't get canvases to line up side by side
+			// var desiredWidth = (PDF.windowWidth / 2) - DEBUG_FUDGEFACTOR;
+			// var desiredHeight = PDF.windowHeight - document.getElementById('banner').offsetHeight - 4; // subtract border thickness
+			// var viewport = page.getViewport(1);
+			// var scale1 = desiredWidth / viewport.width;
+			// var scale2 = desiredHeight / viewport.height;
+			// if ( scale1 >= scale2 ) {
+			// 	var scaledViewport = page.getViewport(scale2);
+			// } else {
+			// 	var scaledViewport = page.getViewport(scale1);
+			// }
+			// PDF.canvas[p].height = desiredHeight;
+			// PDF.canvas[p].width = desiredWidth;
+
+			var DEBUG_FUDGEFACTOR = 100; // DEBUG - refactor to get rid of this - this is used for now because I can't get canvases to line up side by side
+			var desiredWidth = (PDF.windowWidth / 2) - DEBUG_FUDGEFACTOR;
+			var desiredHeight = PDF.windowHeight - document.getElementById('banner').offsetHeight - 4; // subtract border thickness
+			var viewport = page.getViewport(1);
+			var scale1 = desiredWidth / viewport.width;
+			var scale2 = desiredHeight / viewport.height;
+			var scaledViewport;
+			if ( scale1 >= scale2 ) {
+				scaledViewport = page.getViewport(scale2);
+			} else {
+				scaledViewport = page.getViewport(scale1);
+			}
+			PDF.canvas[p].height = desiredHeight;
+			PDF.canvas[p].width = desiredWidth;
 
 			// Render PDF page into canvas context
 			var renderContext = {
 				canvasContext: PDF.ctx[p],
-				viewport: viewport
+				// viewport: viewport // DEBUG
+				viewport: scaledViewport
 			};
 			var renderTask = page.render(renderContext);
 
@@ -104,6 +167,24 @@
 					renderView(PDF.pageNum[1], 1);
 				}
 			});
+		}
+
+		/**
+		 *
+		 */
+		function windowWidth() {
+			var docElemProp = window.document.documentElement.clientWidth,
+				body = window.document.body;
+			return window.document.compatMode === "CSS1Compat" && docElemProp || body && body.clientWidth || docElemProp;
+		}
+
+		/**
+		 *
+		 */
+		function windowHeight() {
+			var docElemProp = window.document.documentElement.clientHeight,
+				body = window.document.body;
+			return window.document.compatMode === "CSS1Compat" && docElemProp || body && body.clientHeight || docElemProp;
 		}
 
 		/**
@@ -143,17 +224,18 @@
 	});
 </script>
 
-<h1>PDF.js Previous/Next example</h1>
-
-<div>
-	<button id="prev">Previous</button>
-	<button id="next">Next</button>
-	&nbsp; &nbsp;
-	<span>Page: <span id="page_num"></span> / <span id="page_count"></span></span>
+<div id="banner">
+	<h1>PDF.js Previous/Next example</h1>
+	<div>
+		<button id="prev">Previous</button>
+		<button id="next">Next</button>
+		&nbsp; &nbsp;
+		<span>Page: <span id="page_num"></span> / <span id="page_count"></span></span>
+	</div>
 </div>
-
-<canvas id="the-canvas"></canvas>
-<canvas id="the-canvas-2"></canvas>
-
+<div id="content">
+	<canvas id="the-canvas"></canvas>
+	<canvas id="the-canvas-2"></canvas>
+</div>
 </body>
 </html>
