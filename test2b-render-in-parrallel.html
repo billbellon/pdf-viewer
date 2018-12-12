@@ -54,15 +54,13 @@
 			pageNum: [1, 2],
 			pageRendering: [false, false],
 			pageNumPending: [null, null],
-			scale: 0.8,
-			canvas: [document.getElementById('the-canvas'), document.getElementById('the-canvas-2')],
-			windowWidth: windowWidth(),
-			windowHeight: windowHeight()
+			canvas: [document.getElementById('the-canvas'), document.getElementById('the-canvas-2')]
 		};
 		PDF.ctx = [
 			PDF.canvas[0].getContext('2d'),
 			PDF.canvas[1].getContext('2d')
 		];
+		var resizeTimer;
 
 		init();
 
@@ -82,8 +80,20 @@
 				PDF.pdfDoc[1] = pdfDoc_;
 				document.getElementById('page_count').textContent = PDF.pdfDoc[0].numPages;
 
+				// resize pdf's on resize event (specifically when resizing is done).
+				// based on: https://css-tricks.com/snippets/jquery/done-resizing-event/
+				window.addEventListener('resize', function(){
+					window.clearTimeout(resizeTimer);
+					resizeTimer = window.setTimeout(function(){
+						renderView(PDF.pageNum[0], 0);
+						renderView(PDF.pageNum[1], 1);
+					}, 250);
+
+				});
+
 				// Initial/first page rendering
 				renderView(PDF.pageNum[0], 0);
+				renderView(PDF.pageNum[1], 1);
 			});
 		}
 
@@ -93,11 +103,9 @@
 		 * @param p - which page / canvas to render.
 		 */
 		function renderView(num, p) { // DEBUG - THIS WAS CALLED renderPage() in test2.html
-			console.log('p A: ', p); // DEBUG
 			PDF.pageRendering[p] = true;
 			// Using promise to fetch the page
 			PDF.pdfDoc[p].getPage(num).then(function(page) {
-				console.log('p B: ', p); // DEBUG
 				return onGetPage(page, p); // DEBUG - will p be the value at the time this promise is created or when .then is executed?
 			});
 
@@ -109,30 +117,14 @@
 		 *
 		 */
 		function onGetPage(page, p) {
-			// DEBUG
-			// var viewport = page.getViewport(PDF.scale);
-			// PDF.canvas[p].height = viewport.height;
-			// PDF.canvas[p].width = viewport.width;
-
-			//FROM: https://mozilla.github.io/pdf.js/examples/
-			// var DEBUG_FUDGEFACTOR = 100; // DEBUG - refactor to get rid of this - this is used for now because I can't get canvases to line up side by side
-			// var desiredWidth = (PDF.windowWidth / 2) - DEBUG_FUDGEFACTOR;
-			// var desiredHeight = PDF.windowHeight - document.getElementById('banner').offsetHeight - 4; // subtract border thickness
-			// var viewport = page.getViewport(1);
-			// var scale1 = desiredWidth / viewport.width;
-			// var scale2 = desiredHeight / viewport.height;
-			// if ( scale1 >= scale2 ) {
-			// 	var scaledViewport = page.getViewport(scale2);
-			// } else {
-			// 	var scaledViewport = page.getViewport(scale1);
-			// }
-			// PDF.canvas[p].height = desiredHeight;
-			// PDF.canvas[p].width = desiredWidth;
-
-			var DEBUG_FUDGEFACTOR = 100; // DEBUG - refactor to get rid of this - this is used for now because I can't get canvases to line up side by side
-			var desiredWidth = (PDF.windowWidth / 2) - DEBUG_FUDGEFACTOR;
-			var desiredHeight = PDF.windowHeight - document.getElementById('banner').offsetHeight - 4; // subtract border thickness
+			var DEBUG_FUDGEFACTOR = 5; // DEBUG - refactor to get rid of this - this is used for now because I can't get canvases to line up side by side
+			var desiredWidth = (windowWidth() / 2) - DEBUG_FUDGEFACTOR;
+			var desiredHeight = windowHeight() - document.getElementById('banner').offsetHeight - 4; // subtract border thickness
 			var viewport = page.getViewport(1);
+			console.log('windowWidth()', windowWidth()); // DEBUG
+			console.log('windowWidth', windowWidth); // DEBUG
+			console.log('document.documentElement.clientWidth', document.documentElement.clientWidth); // DEBUG
+			console.log('viewport.width', viewport.width); // DEBUG
 			var scale1 = desiredWidth / viewport.width;
 			var scale2 = desiredHeight / viewport.height;
 			var scaledViewport;
@@ -161,11 +153,11 @@
 					PDF.pageNumPending[p] = null;
 				}
 
-				// DEBUG
-				if (p === 0) {
-					console.log('DEBUG 1');//DEBUG
-					renderView(PDF.pageNum[1], 1);
-				}
+				// // DEBUG
+				// if (p === 0) {
+				// 	console.log('DEBUG 1');//DEBUG
+				// 	renderView(PDF.pageNum[1], 1);
+				// }
 			});
 		}
 
@@ -191,11 +183,11 @@
 		 * If another page rendering in progress, waits until the rendering is
 		 * finised. Otherwise, executes rendering immediately.
 		 */
-		function queueRenderPage(num) {
-			if (PDF.pageRendering[0]) {
-				PDF.pageNumPending[0] = num;
+		function queueRenderPage(p, num) {
+			if (PDF.pageRendering[p]) {
+				PDF.pageNumPending[p] = num;
 			} else {
-				renderView(num, 0);
+				renderView(num, p);
 			}
 		}
 
@@ -203,22 +195,47 @@
 		 * Displays previous page.
 		 */
 		function onPrevPage() {
+			// THIS IS A SIMPLE FIX FOR THE PROBLEM OF THE USER CLICKING ON
+			// THE PREV/NEXT BUTTON REALLY FAST WHICH RESULTS IN BOTH CANVASES SHOWING
+			// THE SAME PAGE.  IMPROVE - COME UP WITH A BETTER SOLUTION
+			if (PDF.pageRendering[0] || PDF.pageRendering[1]) {
+				return;
+			}
+
 			if (PDF.pageNum[0] <= 1) {
 				return;
 			}
+			if (PDF.pageNum[1] <= 2) {
+				return;
+			}
 			PDF.pageNum[0]--;
-			queueRenderPage(PDF.pageNum[0]);
+			PDF.pageNum[1]--;
+			queueRenderPage(0, PDF.pageNum[0]);
+			queueRenderPage(1, PDF.pageNum[1]);
 		}
 
 		/**
 		 * Displays next page.
 		 */
 		function onNextPage() {
-			if (PDF.pageNum[0] >= PDF.pdfDoc[0].numPages) {
+			// THIS IS A SIMPLE FIX FOR THE PROBLEM OF THE USER CLICKING ON
+			// THE PREV/NEXT BUTTON REALLY FAST WHICH RESULTS IN BOTH CANVASES SHOWING
+			// THE SAME PAGE.  IMPROVE - COME UP WITH A BETTER SOLUTION
+			if (PDF.pageRendering[0] || PDF.pageRendering[1]) {
+				return;
+			}
+
+
+			if (PDF.pageNum[0] >= PDF.pdfDoc[0].numPages-1) {
+				return;
+			}
+			if (PDF.pageNum[1] >= PDF.pdfDoc[1].numPages) {
 				return;
 			}
 			PDF.pageNum[0]++;
-			queueRenderPage(PDF.pageNum[0]);
+			PDF.pageNum[1]++;
+			queueRenderPage(0, PDF.pageNum[0]);
+			queueRenderPage(1, PDF.pageNum[1]);
 		}
 
 	});
