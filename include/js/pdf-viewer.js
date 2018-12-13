@@ -64,103 +64,92 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 	/**
 	 * Get page info from document, resize canvas accordingly, and render page.
-	 * @param num  - Page number.
-	 * @param p - which page / canvas to render.
+	 * @param page_num  - Page number.
+	 * @param side - which page / canvas to render.
 	 */
-	function renderView(num, p) { // DEBUG - THIS WAS CALLED renderPage() in test2.html
-		PDF.pageRendering[p] = true;
+	function renderView(page_num, side) {
+		PDF.pageRendering[side] = true;
+
 		// Using promise to fetch the page
-		PDF.pdfDoc[p].getPage(num).then(function(page) {
-			return onGetPage(page, p); // DEBUG - will p be the value at the time this promise is created or when .then is executed?
+		PDF.pdfDoc[side].getPage(page_num).then(function(page) {
+			let borderThickness = 1;
+			let desiredWidth = (windowWidth() / 2) - borderThickness;
+			let desiredHeight = windowHeight() - document.getElementById('banner').offsetHeight;
+			desiredWidth = desiredWidth * PDF.zoom;
+			desiredHeight = desiredHeight * PDF.zoom;
+
+			let viewport = page.getViewport(1);
+			let scale1 = desiredWidth / viewport.width;
+			let scale2 = desiredHeight / viewport.height;
+			let scaledViewport;
+
+			if ( scale1 >= scale2 ) {
+				scaledViewport = page.getViewport(scale2);
+			} else {
+				scaledViewport = page.getViewport(scale1);
+			}
+
+			PDF.canvas[side].height = desiredHeight;
+			PDF.canvas[side].width = desiredWidth;
+
+			// align left page to the right by setting the horizontal factor in the canvas transformation matrix
+			let h = 0;
+			if ( side === 0 ) {
+				let diff = PDF.canvas[0].width - scaledViewport.width;
+				if ( diff > 0 ) {
+					h = diff;
+				}
+			}
+
+			// Render PDF page into canvas context
+			let renderContext = {
+				canvasContext: PDF.ctx[side],
+				viewport: scaledViewport,
+				transform: [1, 0, 0, 1, h, 0]
+			};
+			let renderTask = page.render(renderContext);
+
+			// Wait for rendering to finish
+			renderTask.promise.then(function() {
+				PDF.pageRendering[side] = false;
+				if (PDF.pageNumPending[side] !== null) {
+					// New page rendering is pending
+					renderView(PDF.pageNumPending[side], page);
+					PDF.pageNumPending[side] = null;
+				}
+			});
 		});
 
 		// Update page counters
-		document.getElementById('page_num').textContent = num;
+		document.getElementById('page_num').textContent = page_num;
 	}
 
 	/**
-	 * @param page - pdf page object
-	 * @param p - which page / canvas to render (0 or 1).
-	 */
-	function onGetPage(page, p) {
-		let borderThickness = 1;
-		let desiredWidth = (windowWidth() / 2) - borderThickness;
-		let desiredHeight = windowHeight() - document.getElementById('banner').offsetHeight;
-		desiredWidth = desiredWidth * PDF.zoom;
-		desiredHeight = desiredHeight * PDF.zoom;
-
-		let viewport = page.getViewport(1);
-		let scale1 = desiredWidth / viewport.width;
-		let scale2 = desiredHeight / viewport.height;
-		let scaledViewport;
-
-		if ( scale1 >= scale2 ) {
-			scaledViewport = page.getViewport(scale2);
-		} else {
-			scaledViewport = page.getViewport(scale1);
-		}
-
-		PDF.canvas[p].height = desiredHeight;
-		PDF.canvas[p].width = desiredWidth;
-
-		// DEBUG - WORKING HERE
-		// align left page to the right by setting the horizontal factor in the canvas transformation matrix
-		let h = 0;
-		if ( p === 0 ) {
-			let diff = PDF.canvas[0].width - scaledViewport.width;
-			if ( diff > 0 ) {
-				h = diff;
-			}
-		}
-
-		// Render PDF page into canvas context
-		let renderContext = {
-			canvasContext: PDF.ctx[p],
-			viewport: scaledViewport,
-			transform: [1, 0, 0, 1, h, 0]
-		};
-		let renderTask = page.render(renderContext);
-
-		// Wait for rendering to finish
-		renderTask.promise.then(function() {
-			PDF.pageRendering[p] = false;
-			if (PDF.pageNumPending[p] !== null) {
-				// New page rendering is pending
-				renderView(PDF.pageNumPending[p], page);
-				PDF.pageNumPending[p] = null;
-			}
-		});
-	}
-
-	/**
-	 *
+	 * Get viewport width
 	 */
 	function windowWidth() {
-		return window.innerWidth;// DEBUG
-		// let docElemProp = window.document.documentElement.clientWidth,
-		// 	body = window.document.body;
-		// return window.document.compatMode === "CSS1Compat" && docElemProp || body && body.clientWidth || docElemProp;
+		return window.innerWidth;
 	}
 
 	/**
-	 *
+	 * Get viewport height
 	 */
 	function windowHeight() {
-		return window.innerHeight;// DEBUG
-		// let docElemProp = window.document.documentElement.clientHeight,
-		// 	body = window.document.body;
-		// return window.document.compatMode === "CSS1Compat" && docElemProp || body && body.clientHeight || docElemProp;
+		return window.innerHeight;
 	}
 
 	/**
 	 * If another page rendering in progress, waits until the rendering is
 	 * finised. Otherwise, executes rendering immediately.
+	 *
+	 * @param side
+	 * @param page_num
 	 */
-	function queueRenderPage(p, num) {
-		if (PDF.pageRendering[p]) {
-			PDF.pageNumPending[p] = num;
+	function queueRenderPage(side, page_num) {
+		if (PDF.pageRendering[side]) {
+			PDF.pageNumPending[side] = page_num;
 		} else {
-			renderView(num, p);
+			renderView(page_num, side);
 		}
 	}
 
