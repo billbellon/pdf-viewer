@@ -11,6 +11,10 @@ html, body {
   color: #333;
   background-color: #ffffff; }
 
+body {
+  display: grid;
+  grid-template-rows: auto 1fr; }
+
 #banner {
   font-size: 14px;
   padding: 5px 10px 5px 10px;
@@ -27,7 +31,8 @@ html, body {
     margin-right: 0; }
 
 #pdf-container {
-  white-space: nowrap; }
+  white-space: nowrap;
+  overflow: auto; }
   #pdf-container canvas {
     background-color: #ccc;
     display: inline-block;

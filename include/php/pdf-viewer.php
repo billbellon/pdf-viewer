@@ -71,7 +71,7 @@ class PDFViewer {
 			$server_name = $_SERVER['SERVER_NAME'];
 		}
 
-		return "'" . "https://$server_name/$pdf" . "'";
+		return "https://$server_name/$pdf";
 	}
 
 	function test()
@@ -82,21 +82,21 @@ class PDFViewer {
 		$q = '/pdf-viewer/include/example2.pdf';
 		$tests[] = array(
 			'q'        => $q,
-			'expected' => "'https://www.ssec.wisc.edu/pdf-viewer/include/example2.pdf'",
+			'expected' => "https://www.ssec.wisc.edu/pdf-viewer/include/example2.pdf",
 			'actual__' => $this->getURL( 'www.ssec.wisc.edu', $q, true )
 		);
 
 		$q = 'https://cimss.ssec.wisc.edu/pdf-viewer/include/example2.pdf';
 		$tests[] = array(
 			'q'        => $q,
-			'expected' => "'https://www.ssec.wisc.edu/cimss.ssec.wisc.edu/pdf-viewer/include/example2.pdf'",
+			'expected' => "https://www.ssec.wisc.edu/cimss.ssec.wisc.edu/pdf-viewer/include/example2.pdf",
 			'actual__' => $this->getURL( 'www.ssec.wisc.edu', $q, true )
 		);
 
 		$q = '/pdf-viewer/in!!clude/ex@@ample2.pdf';
 		$tests[] = array(
 			'q'        => $q,
-			'expected' => "'https://www.ssec.wisc.edu/pdf-viewer/include/example2.pdf'",
+			'expected' => "https://www.ssec.wisc.edu/pdf-viewer/include/example2.pdf",
 			'actual__' => $this->getURL( 'www.ssec.wisc.edu', $q, true )
 		);
 

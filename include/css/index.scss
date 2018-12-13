@@ -13,6 +13,11 @@ html, body {
     background-color: #ffffff;
 }
 
+body {
+    display: grid;
+    grid-template-rows: auto 1fr;
+}
+
 #banner {
     font-size: 14px;
     padding: 5px 10px 5px 10px;
@@ -38,10 +43,8 @@ html, body {
 }
 
 #pdf-container {
-    //display: flex;
-    //justify-content: center;
-    //align-items: flex-start;
     white-space: nowrap;
+    overflow: auto;
 
     canvas {
         background-color: #ccc;

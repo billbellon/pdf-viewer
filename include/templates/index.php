@@ -7,7 +7,7 @@
 	<script>
 		// If absolute URL from the remote server is provided, configure the CORS
 		// header on that server.
-		let pdfURL = <?php echo $this->url;?>;
+		let pdfURL = '<?php echo $this->url;?>';
 	</script>
 	<script src="./include/js/pdfjs-2.0.943-dist/build/pdf.js"></script>
 	<script src="./include/js/pdf-viewer.js"></script>
@@ -17,7 +17,7 @@
 	<h1 id="title">PDF</h1>
 	<div id="controls">
 		<span class="control-group">
-			<button>Download PDF</button>
+			<a href="<?php echo $this->url;?>"><button>Download PDF</button></a>
 		</span>
 		<span id="zoom-buttons" class="control-group">
 			<button id="zoomout">-</button>

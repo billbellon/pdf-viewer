@@ -1,4 +1,4 @@
-(function(pdfjsLib, pdfURL){
+(function(pdfjsLib, pdfURL) {
 
 	document.addEventListener("DOMContentLoaded", function(event) {
 
@@ -70,8 +70,7 @@
 		 * @param side - which page / canvas to render.
 		 */
 		function renderView(page_num, side) {
-
-			if (page_num === 'show-blank-page') {
+			if (side === 'right' && PDF.pageNum.right > PDF.pdfDoc.right.numPages) {
 				PDF.canvas[side].style.display = 'none';
 				return;
 			} else {
@@ -132,7 +131,9 @@
 			});
 
 			// Update page counters
-			document.getElementById('page_num').textContent = page_num;
+			if (side === 'left') {
+				document.getElementById('page_num').textContent = page_num;
+			}
 		}
 
 		/**
@@ -215,11 +216,7 @@
 			}
 
 			queueRenderPage('left', PDF.pageNum.left);
-			if (PDF.pageNum.right <= PDF.pdfDoc.right.numPages) {
-				queueRenderPage('right', PDF.pageNum.right);
-			} else {
-				queueRenderPage('right', 'show-blank-page');
-			}
+			queueRenderPage('right', PDF.pageNum.right);
 		}
 
 		function coverPage(direction) {
