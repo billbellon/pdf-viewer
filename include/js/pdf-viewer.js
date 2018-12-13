@@ -47,9 +47,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 			// resize left and right page on resize event (specifically when resizing is done).
 			// based on: https://css-tricks.com/snippets/jquery/done-resizing-event/
-			window.addEventListener('resize', function(){
+			window.addEventListener('resize', function() {
 				window.clearTimeout(resizeTimer);
-				resizeTimer = window.setTimeout(function(){
+				resizeTimer = window.setTimeout(function() {
 					renderView(PDF.pageNum.left, 'left');
 					renderView(PDF.pageNum.right, 'right');
 				}, 250);
@@ -68,6 +68,15 @@ document.addEventListener("DOMContentLoaded", function(event) {
 	 * @param side - which page / canvas to render.
 	 */
 	function renderView(page_num, side) {
+
+		if (page_num === 'show-blank-page') {
+			PDF.canvas[side].style.display = 'none';
+			return;
+		} else {
+			PDF.canvas[side].style.display = 'inline-block';
+		}
+
+
 		PDF.pageRendering[side] = true;
 
 		// Using promise to fetch the page
@@ -83,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 			let scale2 = desiredHeight / viewport.height;
 			let scaledViewport;
 
-			if ( scale1 >= scale2 ) {
+			if (scale1 >= scale2) {
 				scaledViewport = page.getViewport(scale2);
 			} else {
 				scaledViewport = page.getViewport(scale1);
@@ -94,9 +103,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 			// align left page to the right by setting the horizontal factor in the canvas transformation matrix
 			let h = 0;
-			if ( side === 'left' ) {
+			if (side === 'left') {
 				let diff = PDF.canvas.left.width - scaledViewport.width;
-				if ( diff > 0 ) {
+				if (diff > 0) {
 					h = diff;
 				}
 			}
@@ -167,11 +176,15 @@ document.addEventListener("DOMContentLoaded", function(event) {
 		if (PDF.pageNum.left <= 1) {
 			return;
 		}
-		if (PDF.pageNum.right <= 2) {
-			return;
+
+		if (coverPage('previous')) {
+			PDF.pageNum.left = PDF.pageNum.left - 1;
+			PDF.pageNum.right = PDF.pageNum.right - 1;
+		} else {
+			PDF.pageNum.left = PDF.pageNum.left - 2;
+			PDF.pageNum.right = PDF.pageNum.right - 2;
 		}
-		PDF.pageNum.left--;
-		PDF.pageNum.right--;
+
 		queueRenderPage('left', PDF.pageNum.left);
 		queueRenderPage('right', PDF.pageNum.right);
 	}
@@ -187,17 +200,32 @@ document.addEventListener("DOMContentLoaded", function(event) {
 			return;
 		}
 
+		if (PDF.pageNum.left >= PDF.pdfDoc.left.numPages - 1) {
+			return;
+		}
 
-		if (PDF.pageNum.left >= PDF.pdfDoc.left.numPages-1) {
-			return;
+		if (coverPage('next')) {
+			PDF.pageNum.left = PDF.pageNum.left + 1;
+			PDF.pageNum.right = PDF.pageNum.right + 1;
+		} else {
+			PDF.pageNum.left = PDF.pageNum.left + 2;
+			PDF.pageNum.right = PDF.pageNum.right + 2;
 		}
-		if (PDF.pageNum.right >= PDF.pdfDoc.right.numPages) {
-			return;
-		}
-		PDF.pageNum.left++;
-		PDF.pageNum.right++;
+
 		queueRenderPage('left', PDF.pageNum.left);
-		queueRenderPage('right', PDF.pageNum.right);
+		if (PDF.pageNum.right <= PDF.pdfDoc.right.numPages) {
+			queueRenderPage('right', PDF.pageNum.right);
+		} else {
+			queueRenderPage('right', 'show-blank-page');
+		}
+	}
+
+	function coverPage(direction) {
+		if (direction === 'next') {
+			return (PDF.pageNum.left === 1);
+		} else {
+			return (PDF.pageNum.left === 2);
+		}
 	}
 
 	/**
@@ -225,7 +253,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 	 * @param pdfDoc_
 	 */
 	function setTitle(pdfDoc) {
-		pdfDoc.getMetadata().then(function(metadata){
+		pdfDoc.getMetadata().then(function(metadata) {
 			let title = metadata.metadata.get('dc:title');
 			document.getElementById("title").innerText = title;
 			document.title = title;
