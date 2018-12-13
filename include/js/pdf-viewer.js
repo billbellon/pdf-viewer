@@ -7,18 +7,18 @@ document.addEventListener("DOMContentLoaded", function(event) {
 	pdfjsLib.GlobalWorkerOptions.workerSrc = './include/js/pdfjs-2.0.943-dist/build/pdf.worker.js';
 
 	let PDF = {
-		pdfDoc: [null, null],
-		pageNum: [1, 2],
-		pageRendering: [false, false],
-		pageNumPending: [null, null],
-		canvas: [document.getElementById('the-canvas'), document.getElementById('the-canvas-2')],
+		pdfDoc: {left: null, right: null},
+		pageNum: {left: 1, right: 2},
+		pageRendering: {left: false, right: false},
+		pageNumPending: {left: null, right: null},
+		canvas: {left: document.getElementById('the-canvas'), right: document.getElementById('the-canvas-2')},
 		zoom: 1,
 		zoomFactor: 0.2
 	};
-	PDF.ctx = [
-		PDF.canvas[0].getContext('2d'),
-		PDF.canvas[1].getContext('2d')
-	];
+	PDF.ctx = {
+		left: PDF.canvas.left.getContext('2d'),
+		right: PDF.canvas.right.getContext('2d')
+	};
 	let resizeTimer;
 
 	init(pdfURL);
@@ -38,27 +38,27 @@ document.addEventListener("DOMContentLoaded", function(event) {
 		document.getElementById('zoomin').addEventListener('click', onZoomIn);
 
 		pdfjsLib.getDocument(pdfURL).then(function(pdfDoc_) {
-			PDF.pdfDoc[0] = pdfDoc_;
-			PDF.pdfDoc[1] = pdfDoc_;
+			PDF.pdfDoc.left = pdfDoc_;
+			PDF.pdfDoc.right = pdfDoc_;
 
 			setTitle(pdfDoc_);
 
-			document.getElementById('page_count').textContent = PDF.pdfDoc[0].numPages;
+			document.getElementById('page_count').textContent = PDF.pdfDoc.left.numPages;
 
-			// resize pdf's on resize event (specifically when resizing is done).
+			// resize left and right page on resize event (specifically when resizing is done).
 			// based on: https://css-tricks.com/snippets/jquery/done-resizing-event/
 			window.addEventListener('resize', function(){
 				window.clearTimeout(resizeTimer);
 				resizeTimer = window.setTimeout(function(){
-					renderView(PDF.pageNum[0], 0);
-					renderView(PDF.pageNum[1], 1);
+					renderView(PDF.pageNum.left, 'left');
+					renderView(PDF.pageNum.right, 'right');
 				}, 250);
 
 			});
 
 			// Initial/first page rendering
-			renderView(PDF.pageNum[0], 0);
-			renderView(PDF.pageNum[1], 1);
+			renderView(PDF.pageNum.left, 'left');
+			renderView(PDF.pageNum.right, 'right');
 		});
 	}
 
@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 			// align left page to the right by setting the horizontal factor in the canvas transformation matrix
 			let h = 0;
 			if ( side === 0 ) {
-				let diff = PDF.canvas[0].width - scaledViewport.width;
+				let diff = PDF.canvas.left.width - scaledViewport.width;
 				if ( diff > 0 ) {
 					h = diff;
 				}
@@ -160,20 +160,20 @@ document.addEventListener("DOMContentLoaded", function(event) {
 		// THIS IS A SIMPLE FIX FOR THE PROBLEM OF THE USER CLICKING ON
 		// THE PREV/NEXT BUTTON REALLY FAST WHICH RESULTS IN BOTH CANVASES SHOWING
 		// THE SAME PAGE.  IMPROVE - COME UP WITH A BETTER SOLUTION
-		if (PDF.pageRendering[0] || PDF.pageRendering[1]) {
+		if (PDF.pageRendering.left || PDF.pageRendering.right) {
 			return;
 		}
 
-		if (PDF.pageNum[0] <= 1) {
+		if (PDF.pageNum.left <= 1) {
 			return;
 		}
-		if (PDF.pageNum[1] <= 2) {
+		if (PDF.pageNum.right <= 2) {
 			return;
 		}
-		PDF.pageNum[0]--;
-		PDF.pageNum[1]--;
-		queueRenderPage(0, PDF.pageNum[0]);
-		queueRenderPage(1, PDF.pageNum[1]);
+		PDF.pageNum.left--;
+		PDF.pageNum.right--;
+		queueRenderPage('left', PDF.pageNum.left);
+		queueRenderPage('right', PDF.pageNum.right);
 	}
 
 	/**
@@ -183,21 +183,21 @@ document.addEventListener("DOMContentLoaded", function(event) {
 		// THIS IS A SIMPLE FIX FOR THE PROBLEM OF THE USER CLICKING ON
 		// THE PREV/NEXT BUTTON REALLY FAST WHICH RESULTS IN BOTH CANVASES SHOWING
 		// THE SAME PAGE.  IMPROVE - COME UP WITH A BETTER SOLUTION
-		if (PDF.pageRendering[0] || PDF.pageRendering[1]) {
+		if (PDF.pageRendering.left || PDF.pageRendering.right) {
 			return;
 		}
 
 
-		if (PDF.pageNum[0] >= PDF.pdfDoc[0].numPages-1) {
+		if (PDF.pageNum.left >= PDF.pdfDoc.left.numPages-1) {
 			return;
 		}
-		if (PDF.pageNum[1] >= PDF.pdfDoc[1].numPages) {
+		if (PDF.pageNum.right >= PDF.pdfDoc.right.numPages) {
 			return;
 		}
-		PDF.pageNum[0]++;
-		PDF.pageNum[1]++;
-		queueRenderPage(0, PDF.pageNum[0]);
-		queueRenderPage(1, PDF.pageNum[1]);
+		PDF.pageNum.left++;
+		PDF.pageNum.right++;
+		queueRenderPage('left', PDF.pageNum.left);
+		queueRenderPage('right', PDF.pageNum.right);
 	}
 
 	/**
@@ -206,8 +206,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
 	function onZoomOut() {
 		PDF.zoom = PDF.zoom * (1 - PDF.zoomFactor);
 		if (PDF.zoom < 1) PDF.zoom = 1;
-		renderView(PDF.pageNum[0], 0);
-		renderView(PDF.pageNum[1], 1);
+		renderView(PDF.pageNum.left, 'left');
+		renderView(PDF.pageNum.right, 'right');
 	}
 
 	/**
@@ -215,8 +215,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
 	 */
 	function onZoomIn() {
 		PDF.zoom = PDF.zoom * (1 + PDF.zoomFactor);
-		renderView(PDF.pageNum[0], 0);
-		renderView(PDF.pageNum[1], 1);
+		renderView(PDF.pageNum.left, 'left');
+		renderView(PDF.pageNum.right, 'right');
 	}
 
 	/**
