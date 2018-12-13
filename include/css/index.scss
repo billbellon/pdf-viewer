@@ -1,3 +1,5 @@
+$desktopMinWidth: 600px;
+
 * {
     box-sizing: border-box;
 }
@@ -24,21 +26,71 @@ body {
     background-color: #eee;
 
     h1 {
-        margin: 0 0 5px 0;
         padding: 0;
-        font-size: 24px;
+        font-size: 18px;
+        margin: 0 0 1em 0;
+        @media only screen and (min-width: $desktopMinWidth) {
+            margin: 0 0 5px 0;
+        }
     }
 
     #controls {
-        text-align: right;
+        display: grid;
+        grid-template-rows: 1fr 1fr;
+        grid-template-columns: 1fr 1fr;
+        grid-row-gap: 1em;
+
+        button {
+            font-size: 24px;
+            padding: 10px;
+        }
+        #zoomout, #zoomin {
+            width: 3em;
+        }
+        #zoomout {
+            margin-right: 1em;
+        }
     }
 
     .control-group {
-        margin-right: 2em;
+        white-space: nowrap;
     }
 
     #controls > .control-group:last-child {
         margin-right: 0;
+    }
+
+    #controls {
+        & > .control-group:nth-child(1), & > .control-group:nth-child(3) {
+            justify-self: start;
+            align-self: start;
+        }
+
+        & > .control-group:nth-child(2), & > .control-group:nth-child(4) {
+            justify-self: end;
+            align-self: end;
+        }
+    }
+
+    @media only screen and (min-width: $desktopMinWidth) {
+        #controls {
+            font-size: 14px;
+            display: block;
+            text-align: right;
+
+            button {
+                font-size: inherit;
+                padding: 3px;
+            }
+            #zoomout {
+                margin-right: 0;
+            }
+        }
+
+        .control-group {
+            margin-right: 2em;
+            white-space: normal;
+        }
     }
 }
 

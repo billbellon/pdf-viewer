@@ -20,15 +20,47 @@ body {
   padding: 5px 10px 5px 10px;
   background-color: #eee; }
   #banner h1 {
-    margin: 0 0 5px 0;
     padding: 0;
-    font-size: 24px; }
+    font-size: 18px;
+    margin: 0 0 1em 0; }
+    @media only screen and (min-width: 600px) {
+      #banner h1 {
+        margin: 0 0 5px 0; } }
   #banner #controls {
-    text-align: right; }
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+    grid-row-gap: 1em; }
+    #banner #controls button {
+      font-size: 24px;
+      padding: 10px; }
+    #banner #controls #zoomout, #banner #controls #zoomin {
+      width: 3em; }
+    #banner #controls #zoomout {
+      margin-right: 1em; }
   #banner .control-group {
-    margin-right: 2em; }
+    white-space: nowrap; }
   #banner #controls > .control-group:last-child {
     margin-right: 0; }
+  #banner #controls > .control-group:nth-child(1), #banner #controls > .control-group:nth-child(3) {
+    justify-self: start;
+    align-self: start; }
+  #banner #controls > .control-group:nth-child(2), #banner #controls > .control-group:nth-child(4) {
+    justify-self: end;
+    align-self: end; }
+  @media only screen and (min-width: 600px) {
+    #banner #controls {
+      font-size: 14px;
+      display: block;
+      text-align: right; }
+      #banner #controls button {
+        font-size: inherit;
+        padding: 3px; }
+      #banner #controls #zoomout {
+        margin-right: 0; }
+    #banner .control-group {
+      margin-right: 2em;
+      white-space: normal; } }
 
 #pdf-container {
   white-space: nowrap;

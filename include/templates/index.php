@@ -3,6 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<title>PDF</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
 	<link href="./include/css/index.css" rel="stylesheet" type="text/css">
 	<script>
 		// If absolute URL from the remote server is provided, configure the CORS
