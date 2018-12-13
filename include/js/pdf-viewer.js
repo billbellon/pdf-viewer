@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 			// align left page to the right by setting the horizontal factor in the canvas transformation matrix
 			let h = 0;
-			if ( side === 0 ) {
+			if ( side === 'left' ) {
 				let diff = PDF.canvas.left.width - scaledViewport.width;
 				if ( diff > 0 ) {
 					h = diff;
