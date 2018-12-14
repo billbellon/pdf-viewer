@@ -18,7 +18,8 @@ body {
 #banner {
   font-size: 14px;
   padding: 5px 10px 5px 10px;
-  background-color: #eee; }
+  background-color: #666;
+  color: white; }
   #banner h1 {
     padding: 0;
     font-size: 18px;
@@ -33,21 +34,30 @@ body {
     grid-row-gap: 1em; }
     #banner #controls button {
       font-size: 24px;
-      padding: 10px; }
+      padding: 10px;
+      margin: 0 1px 0 1px; }
     #banner #controls #zoomout, #banner #controls #zoomin {
-      width: 3em; }
-    #banner #controls #zoomout {
-      margin-right: 1em; }
+      width: 50%; }
+    #banner #controls #download-button {
+      margin-right: 2px; }
+      #banner #controls #download-button * {
+        width: 100%;
+        height: 100%; }
+    #banner #controls button {
+      white-space: nowrap; }
+    #banner #controls #page-num-container {
+      align-self: center;
+      text-align: right;
+      justify-self: flex-end; }
   #banner .control-group {
-    white-space: nowrap; }
+    display: flex;
+    align-items: stretch; }
   #banner #controls > .control-group:last-child {
     margin-right: 0; }
   #banner #controls > .control-group:nth-child(1), #banner #controls > .control-group:nth-child(3) {
-    justify-self: start;
-    align-self: start; }
+    justify-self: stretch; }
   #banner #controls > .control-group:nth-child(2), #banner #controls > .control-group:nth-child(4) {
-    justify-self: end;
-    align-self: end; }
+    justify-self: stretch; }
   @media only screen and (min-width: 600px) {
     #banner #controls {
       font-size: 14px;
@@ -55,12 +65,20 @@ body {
       text-align: right; }
       #banner #controls button {
         font-size: inherit;
-        padding: 3px; }
+        padding: 3px;
+        margin: 0; }
+      #banner #controls #zoomout, #banner #controls #zoomin {
+        width: 2.5em; }
       #banner #controls #zoomout {
         margin-right: 0; }
+      #banner #controls #download-button * {
+        width: auto;
+        height: auto; }
+    #banner .control-group, #banner #download-button {
+      margin-right: 2em !important; }
     #banner .control-group {
-      margin-right: 2em;
-      white-space: normal; } }
+      display: inline-block;
+      white-space: nowrap; } }
 
 #pdf-container {
   white-space: nowrap;
@@ -78,5 +96,43 @@ body {
     font-size: 20px; }
   #error-message * {
     font-size: 16px; }
+
+.btn:not(:disabled):not(.disabled) {
+  cursor: pointer; }
+
+[type=reset], [type=submit], button, html [type=button] {
+  -webkit-appearance: button; }
+
+.btn-light {
+  color: #212529;
+  background-color: #E0E0E0;
+  border-color: #999; }
+
+.btn {
+  display: inline-block;
+  font-weight: 400;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  border: 1px solid transparent;
+  padding: .375rem .75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 3px;
+  transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out; }
+
+button, select {
+  text-transform: none; }
+
+button, input {
+  overflow: visible; }
+
+button, input, optgroup, select, textarea {
+  margin: 0;
+  font-family: inherit; }
 
 /*# sourceMappingURL=index.css.map */

@@ -1,5 +1,7 @@
 $desktopMinWidth: 600px;
 
+//@import "bootstrap";
+
 * {
     box-sizing: border-box;
 }
@@ -23,7 +25,8 @@ body {
 #banner {
     font-size: 14px;
     padding: 5px 10px 5px 10px;
-    background-color: #eee;
+    background-color: #666;
+    color: white;
 
     h1 {
         padding: 0;
@@ -43,17 +46,41 @@ body {
         button {
             font-size: 24px;
             padding: 10px;
+            margin: 0 1px 0 1px;
         }
+
         #zoomout, #zoomin {
-            width: 3em;
+            //width: 3em;
+            width: 50%;
         }
+
         #zoomout {
-            margin-right: 1em;
+            //margin-right: 1em;
+        }
+
+        #download-button {
+            margin-right: 2px;
+
+            * {
+                width: 100%;
+                height: 100%;
+            }
+        }
+
+        button {
+            white-space: nowrap;
+        }
+
+        #page-num-container {
+            align-self: center;
+            text-align: right;
+            justify-self: flex-end;
         }
     }
 
     .control-group {
-        white-space: nowrap;
+        display: flex;
+        align-items: stretch;
     }
 
     #controls > .control-group:last-child {
@@ -62,13 +89,11 @@ body {
 
     #controls {
         & > .control-group:nth-child(1), & > .control-group:nth-child(3) {
-            justify-self: start;
-            align-self: start;
+            justify-self: stretch;
         }
 
         & > .control-group:nth-child(2), & > .control-group:nth-child(4) {
-            justify-self: end;
-            align-self: end;
+            justify-self: stretch;
         }
     }
 
@@ -81,15 +106,30 @@ body {
             button {
                 font-size: inherit;
                 padding: 3px;
+                margin: 0;
             }
+
+            #zoomout, #zoomin {
+                width: 2.5em;
+            }
+
             #zoomout {
                 margin-right: 0;
             }
+
+            #download-button * {
+                width: auto;
+                height: auto;
+            }
+        }
+
+        .control-group, #download-button {
+            margin-right: 2em !important;
         }
 
         .control-group {
-            margin-right: 2em;
-            white-space: normal;
+            display: inline-block;
+            white-space: nowrap;
         }
     }
 }
@@ -119,5 +159,52 @@ body {
     * {
         font-size: 16px;
     }
+}
+
+// BOOTSTRAP
+.btn:not(:disabled):not(.disabled) {
+    cursor: pointer;
+}
+
+[type=reset], [type=submit], button, html [type=button] {
+    -webkit-appearance: button;
+}
+
+.btn-light {
+    color: #212529;
+    background-color: #E0E0E0; //#f8f9fa;
+    border-color: #999; //#f8f9fa;
+}
+
+.btn {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    //border-radius: .25rem;
+    border-radius: 3px;
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+button, select {
+    text-transform: none;
+}
+
+button, input {
+    overflow: visible;
+}
+
+button, input, optgroup, select, textarea {
+    margin: 0;
+    font-family: inherit;
 }
 
