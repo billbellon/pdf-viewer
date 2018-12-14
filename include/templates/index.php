@@ -14,6 +14,9 @@
 	<script src="./include/js/pdf-viewer.js"></script>
 </head>
 <body>
+<div id="downloading-pdf-loading-icon">
+	<img src="/pdf-viewer/include/img/loading-icon.svg" id="loading-icon-left" class="loading-icon">
+</div>
 <div id="banner">
 	<h1 id="title">PDF</h1>
 	<div id="controls">
@@ -34,8 +37,14 @@
 	</div>
 </div>
 <div id="pdf-container">
-	<canvas id="the-canvas"></canvas>
-	<canvas id="the-canvas-2"></canvas>
+	<div id="left-page">
+		<img src="/pdf-viewer/include/img/loading-icon.svg" id="loading-icon-left" class="loading-icon">
+		<canvas id="the-canvas"></canvas>
+	</div>
+	<div id="right-page">
+		<img src="/pdf-viewer/include/img/loading-icon.svg" id="loading-icon-right"  class="loading-icon">
+		<canvas id="the-canvas-2"></canvas>
+	</div>
 </div>
 </body>
 </html>

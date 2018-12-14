@@ -3,7 +3,7 @@
 	document.addEventListener("DOMContentLoaded", function(event) {
 
 		// Loaded via <script> tag, create shortcut to access PDF.js exports.
-		// var pdfjsLib = window['pdfjs-dist/build/pdf']; // DEBUG - what is this used for and does this need to be updated with my path to pdf.js?
+		// var pdfjsLib = window['pdfjs-dist/build/pdf']; // IMPROVE - what is this used for and does this need to be updated with my path to pdf.js?
 
 		// The workerSrc property shall be specified.
 		pdfjsLib.GlobalWorkerOptions.workerSrc = './include/js/pdfjs-2.0.943-dist/build/pdf.worker.js';
@@ -39,7 +39,19 @@
 			document.getElementById('zoomout').addEventListener('click', onZoomOut);
 			document.getElementById('zoomin').addEventListener('click', onZoomIn);
 
+			// show loading icon for downloading PDF
+			document.getElementById("banner").style.display = "none";
+			document.getElementById("pdf-container").style.display = "none";
+			document.getElementById("downloading-pdf-loading-icon").style.display = "block";
+
 			pdfjsLib.getDocument(pdfURL).then(function(pdfDoc_) {
+
+				// hide loading icon for downloading PDF
+				document.getElementById("banner").style.display = "block";
+				document.getElementById("pdf-container").style.display = "block";
+				document.getElementById("downloading-pdf-loading-icon").style.display = "none";
+
+
 				PDF.pdfDoc.left = pdfDoc_;
 				PDF.pdfDoc.right = pdfDoc_;
 
@@ -77,8 +89,8 @@
 				PDF.canvas[side].style.display = 'inline-block';
 			}
 
-
 			PDF.pageRendering[side] = true;
+			disableButtons();
 
 			// Using promise to fetch the page
 			PDF.pdfDoc[side].getPage(page_num).then(function(page) {
@@ -122,6 +134,7 @@
 				// Wait for rendering to finish
 				renderTask.promise.then(function() {
 					PDF.pageRendering[side] = false;
+					enableButtons();
 					if (PDF.pageNumPending[side] !== null) {
 						// New page rendering is pending
 						renderView(PDF.pageNumPending[side], page);
@@ -133,6 +146,48 @@
 			// Update page counters
 			if (side === 'left') {
 				document.getElementById('page_num').textContent = page_num;
+			}
+		}
+
+		/**
+		 *
+		 */
+		function disableButtons() {
+			document.getElementById("prev").setAttribute('disabled', 'disabled');
+			document.getElementById("next").setAttribute('disabled', 'disabled');
+			showLoadingIcons();
+		}
+
+		/**
+		 *
+		 */
+		function enableButtons() {
+			if ( PDF.pageRendering.left === false && PDF.pageRendering.right === false ) {
+				document.getElementById("prev").removeAttribute('disabled');
+				document.getElementById("next").removeAttribute('disabled');
+			}
+
+			showLoadingIcons();
+		}
+
+		/**
+		 *
+		 */
+		function showLoadingIcons() {
+			if (PDF.pageRendering.left) {
+				document.getElementById("loading-icon-left").style.display = 'inline-block';
+				PDF.canvas.left.style.display = 'none';
+			} else {
+				document.getElementById("loading-icon-left").style.display = 'none';
+				PDF.canvas.left.style.display = 'inline-block';
+			}
+
+			if (PDF.pageRendering.right) {
+				document.getElementById("loading-icon-right").style.display = 'inline-block';
+				PDF.canvas.right.style.display = 'none';
+			} else {
+				document.getElementById("loading-icon-right").style.display = 'none';
+				PDF.canvas.right.style.display = 'inline-block';
 			}
 		}
 
@@ -254,9 +309,48 @@
 		function setTitle(pdfDoc) {
 			pdfDoc.getMetadata().then(function(metadata) {
 				let title = metadata.metadata.get('dc:title');
-				document.getElementById("title").innerText = title;
-				document.title = title;
+				let titleElem = document.getElementById("title");
+				if (!empty(title)) {
+					titleElem.innerText = title;
+					document.title = title;
+				} else {
+					titleElem.parentNode.removeChild(titleElem);
+					document.title = 'PDF -- SSEC';
+				}
 			});
+		}
+
+		/**
+		 * equivalent of PHP empty()
+		 *
+		 * source: http://locutus.io/php/empty/
+		 *
+		 * @param mixedVar
+		 * @returns {boolean}
+		 */
+		function empty(mixedVar) {
+			let undef;
+			let key;
+			let i;
+			let len;
+			let emptyValues = [undef, null, false, 0, '', '0'];
+
+			for (i = 0, len = emptyValues.length; i < len; i++) {
+				if (mixedVar === emptyValues[i]) {
+					return true
+				}
+			}
+
+			if (typeof mixedVar === 'object') {
+				for (key in mixedVar) {
+					if (mixedVar.hasOwnProperty(key)) {
+						return false
+					}
+				}
+				return true
+			}
+
+			return false
 		}
 
 	});
