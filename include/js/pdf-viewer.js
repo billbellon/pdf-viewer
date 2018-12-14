@@ -187,7 +187,11 @@
 				PDF.canvas.right.style.display = 'none';
 			} else {
 				document.getElementById("loading-icon-right").style.display = 'none';
-				PDF.canvas.right.style.display = 'inline-block';
+				if (PDF.pageNum.right > PDF.pdfDoc.right.numPages) {
+					PDF.canvas.right.style.display = 'none';
+				} else {
+					PDF.canvas.right.style.display = 'inline-block';
+				}
 			}
 		}
 
