@@ -151,6 +151,18 @@ body {
         vertical-align: top;
     }
 
+    &.portrait {
+        .page--landscape {
+            display: none;
+        }
+    }
+
+    &.landscape {
+        .page--portrait {
+            display: none;
+        }
+    }
+
     .loading-icon {
         display: none;
     }

@@ -93,6 +93,10 @@ body {
     background-color: #ccc;
     display: inline-block;
     vertical-align: top; }
+  #pdf-container.portrait .page--landscape {
+    display: none; }
+  #pdf-container.landscape .page--portrait {
+    display: none; }
   #pdf-container .loading-icon {
     display: none; }
 

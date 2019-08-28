@@ -1,4 +1,6 @@
 <?php
+/** @noinspection RegExpRedundantEscape */
+
 if ( $_SERVER['SERVER_NAME'] !== 'www.ssec.wisc.edu' ) {
 	ini_set( 'display_errors', true );
 	error_reporting( E_ALL );
@@ -12,7 +14,11 @@ if ( $_SERVER['SERVER_NAME'] !== 'www.ssec.wisc.edu' ) {
 
 class PDFViewer {
 	public $url = null;
+	public $pdf_format = null;
 
+    /**
+     * PDFViewer constructor.
+     */
 	function __construct()
 	{
 		if ( isset( $_GET['debug'] ) ) {
@@ -21,14 +27,36 @@ class PDFViewer {
 
 		$this->url = $this->getURL();
 		if ( ! empty( $this->url ) ) {
+		    $this->pdf_format = $this->getPdfFormat();
+
 			include_once( __DIR__ . '/../templates/index.php' );
 		} else {
 			header( "HTTP/1.0 404 Not Found" );
 			include_once( __DIR__ . '/../templates/404.php' );
 		}
-
 	}
 
+    /**
+     * @return mixed|string
+     */
+	function getPdfFormat()
+    {
+        $pdf_format = (isset($_GET['pdf_format'])) ? $_GET['pdf_format'] : 'portrait'; // landscape or portrait
+
+        if (!in_array($pdf_format, array('portrait', 'landscape'))) {
+            $pdf_format = 'portrait';
+        }
+
+        return $pdf_format;
+    }
+
+    /**
+     * @param null $server_name
+     * @param null $pdfPath
+     * @param bool $debug
+     *
+     * @return string|null
+     */
 	function getURL( $server_name = null, $pdfPath = null, $debug = false )
 	{
 		if ( ! empty( $_GET['pdf'] ) ) {
@@ -74,6 +102,9 @@ class PDFViewer {
 		return "https://$server_name/$pdf";
 	}
 
+    /**
+     *
+     */
 	function test()
 	{
 		$tests = array();
