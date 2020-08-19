@@ -47,6 +47,7 @@ body {
             margin: 0 1px 0 1px;
             white-space: nowrap;
         }
+
         button[disabled] {
             color: #999;
         }
@@ -188,6 +189,13 @@ body {
     h1 {
         font-size: 20px;
     }
+
+    width: 100%;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
 
     * {
         font-size: 16px;
